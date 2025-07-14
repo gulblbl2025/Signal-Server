@@ -1,60 +1,69 @@
-name: Service CI
+name: 统计最大并发数
 
 on:
-  pull_request:
-  push:
-    branches-ignore:
-      - gh-pages
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TZ: Asia/Shanghai
 
 jobs:
-  build:
+  concurrent-jobs:
     runs-on: ubuntu-latest
-    container: ubuntu:22.04
-    timeout-minutes: 20
-
-    services:
-      foundationdb:
-        # Note: this should generally match the version of the FoundationDB SERVER deployed in production; it's okay if
-        # it's a little behind the CLIENT version.
-        image: foundationdb/foundationdb:7.3.62
-        options: --name foundationdb
-
+    strategy:
+      matrix:
+        job_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Set up JDK 21
-        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+      - name: 记录时间戳
+        shell: bash
+        run: |
+          mkdir -p timestamps
+          echo "$(date +%s)" > timestamps/start_${{ matrix.job_id }}.txt
+          sleep 10  # 你的实际任务可以放这里
+          echo "$(date +%s)" > timestamps/end_${{ matrix.job_id }}.txt
+
+      - name: 上传 artifact
+        uses: actions/upload-artifact@v4
         with:
-          distribution: 'temurin'
-          java-version: 21
-          cache: 'maven'
-        env:
-          # work around an issue with actions/runner setting an incorrect HOME in containers, which breaks maven caching
-          # https://github.com/actions/setup-java/issues/356
-          HOME: /root
-      - name: Install APT packages
-        # ca-certificates: required for AWS CRT client
-        run: |
-          # Add Docker's official GPG key:
-          apt update
-          apt install -y ca-certificates curl
-          install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-          chmod a+r /etc/apt/keyrings/docker.asc
+          name: timestamps-${{ matrix.job_id }}
+          path: timestamps/
 
-          # Add Docker repository to apt sources:
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-            $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-            tee /etc/apt/sources.list.d/docker.list > /dev/null
+  concurrency-report:
+    needs: concurrent-jobs
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载所有 artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: all_timestamps
 
-          # ca-certificates: required for AWS CRT client
-          apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin ca-certificates
-      - name: Configure FoundationDB database
-        run: docker exec foundationdb /usr/bin/fdbcli --exec 'configure new single memory'
-      - name: Download and install FoundationDB client
+      - name: 统计最大并发数
         run: |
-          ./mvnw -e -B -Pexclude-spam-filter clean prepare-package -DskipTests=true
-          cp service/target/jib-extra/usr/lib/libfdb_c.x86_64.so /usr/lib/libfdb_c.x86_64.so
-          ldconfig
-      - name: Build with Maven
-        run: ./mvnw -e -B clean verify -DfoundationDb.serviceContainerName=foundationdb
+          python3 <<'EOF'
+          import os
+          import glob
+
+          times = []
+          # 遍历所有 start/end 文件
+          for f in glob.glob('all_timestamps/**/start_*.txt', recursive=True):
+              job_id = os.path.basename(f).split('_')[1].split('.')[0]
+              with open(f) as sf, open(f.replace('start_', 'end_')) as ef:
+                  start = int(sf.read().strip())
+                  end = int(ef.read().strip())
+                  times.append((start, 1))
+                  times.append((end, -1))
+          # 按时间排序，累加并发数
+          times.sort()
+          concurrent = 0
+          max_concurrent = 0
+          for t, delta in times:
+              concurrent += delta
+              if concurrent > max_concurrent:
+                  max_concurrent = concurrent
+          # 输出到 Job Summary
+          with open(os.environ['GITHUB_STEP_SUMMARY'], "a") as summary:
+              summary.write(f"## 最大并发数: {max_concurrent}\n")
+          EOF

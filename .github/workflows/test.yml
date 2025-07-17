@@ -33,6 +33,7 @@ jobs:
 
   concurrency-report:
     needs: concurrent-jobs
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: 下载所有 artifact

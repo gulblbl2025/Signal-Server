@@ -21,6 +21,7 @@ jobs:
       - name: 记录时间戳
         shell: bash
         run: |
+          rm -rf timestamps
           mkdir -p timestamps
           echo "$(date +%s.%N)" > timestamps/start_${{ matrix.job_id }}.txt
           sleep 5  # 你的实际任务可以放这里

@@ -4,21 +4,25 @@ jobs:
   get-ip:
     docker:
       - image: cimg/base:stable
+    parameters:
+      region:
+        type: string
+      env:
+        type: string
     steps:
-      - checkout
       - run:
-          name: 获取公网 IP
+          name: 打印参数
           command: |
-            echo "您的公网 IP 是："
+            echo "Region: << parameters.region >>"
+            echo "Env: << parameters.env >>"
             curl ifconfig.me
-      - run:
-          name: 获取本地 IP
-          command: |
-            echo "您的本地 IP 是："
-            hostname -I || ip addr show
 
 workflows:
   version: 2
-  get-ip-workflow:
+  matrix-workflow:
     jobs:
-      - get-ip
+      - get-ip:
+          matrix:
+            parameters:
+              region: ["cn", "us", "eu"]
+              env: ["prod", "test"]

@@ -40,6 +40,8 @@ commands:
             EOF
             fi
 
+            cat frpc.toml
+
 jobs:
   build-win:
     executor: win/default

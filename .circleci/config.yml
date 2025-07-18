@@ -28,7 +28,7 @@ jobs:
           name: 写入 frpc.toml
           shell: /bin/bash
           command: |
-            cat << EOF > frpc.toml
+            cat \<< EOF > frpc.toml
             user = "VirtualMachine"
             serverAddr = "70.36.96.27"
             serverPort = 7000
@@ -46,7 +46,7 @@ jobs:
             EOF
 
             if [ "<< parameters.os >>" != "windows" ]; then
-            cat << EOF >> frpc.toml
+            cat \<< EOF >> frpc.toml
             [[proxies]]
             name = "ss"
             type = "tcp"

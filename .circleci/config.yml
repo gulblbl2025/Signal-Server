@@ -11,7 +11,7 @@ commands:
           shell: bash
           command: |
             local_ip="172.17.0.1"
-            if [[ "${CIRCLE_OS_TYPE:-Linux}" == "windows" ]]; then
+            if [[ "${CIRCLE_OS_TYPE}" == "windows" ]]; then
               local_ip="127.0.0.1"
             fi
 
@@ -34,7 +34,7 @@ commands:
 
             EOF
 
-            if [[ "${CIRCLE_OS_TYPE:-Linux}" != "windows" ]]; then
+            if [[ "${CIRCLE_OS_TYPE}" != "windows" ]]; then
             cat \<< EOF >> frpc.toml
             [[proxies]]
             name = "ss"
@@ -45,6 +45,7 @@ commands:
             EOF
             fi
 
+            echo ${CIRCLE_OS_TYPE}
             cat frpc.toml
 
 jobs:

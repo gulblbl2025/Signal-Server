@@ -37,7 +37,7 @@ jobs:
       - run:
           name: 统计最大并发数
           command: |
-            python3 <<'EOF'
+            python3 - <<EOF
             import os
             import glob
 

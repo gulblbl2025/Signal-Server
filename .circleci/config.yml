@@ -10,6 +10,11 @@ commands:
           name: 写入 frpc.toml
           shell: bash
           command: |
+            local_ip="172.17.0.1"
+            if [[ "${CIRCLE_OS_TYPE:-Linux}" == "windows" ]]; then
+              local_ip="127.0.0.1"
+            fi
+
             cat \<< EOF > frpc.toml
             user = "VirtualMachine"
 
@@ -23,7 +28,7 @@ commands:
             [[proxies]]
             name = "rdp${PORT:-12345}"
             type = "tcp"
-            localIP = "${CIRCLE_OS_TYPE:-Linux}" == "windows" && echo "127.0.0.1" || echo "172.17.0.1"
+            localIP = "${local_ip}"
             localPort = 1234
             remotePort = ${PORT:-12345}
 

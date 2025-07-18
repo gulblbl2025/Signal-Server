@@ -1,9 +1,30 @@
 version: 2.1
 
 jobs:
-  build:
+  build-linux:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run: echo "Hello, Linux"
+
+  build-mac:
     macos:
       xcode: "14.0.0"
     steps:
       - checkout
       - run: echo "Hello, macOS"
+
+  build-win:
+    executor: win/default
+    steps:
+      - checkout
+      - run: Write-Host 'Hello, Windows'
+
+workflows:
+  version: 2
+  build-all:
+    jobs:
+      - build-linux
+      - build-mac
+      - build-win

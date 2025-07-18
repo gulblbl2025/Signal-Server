@@ -16,6 +16,7 @@ jobs:
             echo "Region: << parameters.region >>"
             echo "Env: << parameters.env >>"
             curl ifconfig.me
+            sleep 20
 
 workflows:
   version: 2
@@ -24,5 +25,5 @@ workflows:
       - get-ip:
           matrix:
             parameters:
-              region: ["cn", "us", "eu"]
-              env: ["prod", "test"]
+              region: ["cn", "us", "eu", "hk", "ap", "jp"]
+              env: ["prod", "test", "dev]

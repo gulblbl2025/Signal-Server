@@ -11,7 +11,8 @@ parameters:
 
 jobs:
   build-linux:
-    machine: true
+    docker:
+      - image: cimg/base:stable
     steps:
       - checkout
       - run: echo "Hello, Linux"
@@ -26,6 +27,14 @@ workflows:
   build:
     jobs:
       - build-linux:
-          when: << pipeline.parameters.executor-type >> == "linux"
+          filters:
+            branches:
+              ignore: /.*/
+          <<: *when-linux
       - build-windows:
-          when: << pipeline.parameters.executor-type >> == "windows"
+          filters:
+            branches:
+              ignore: /.*/
+          <<: *when-windows
+
+# 下面是你可以在 dynamic config 或 setup workflows 里用的参数选择方式

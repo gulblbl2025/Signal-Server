@@ -3,13 +3,11 @@ version: 2.1
 orbs:
   win: circleci/windows@5.0
 
-parameters:
-  port:
-    type: integer
-    default: 9001
-
 commands:
   write-frpc-config:
+    parameters:
+      port:
+        type: integer
     steps:
       - run:
           name: 写入 frpc.toml
@@ -38,11 +36,11 @@ commands:
             auth.token = "2f1d3a0e-9b64-4b91-b76b-8cb4a2f2e5d3"
 
             [[proxies]]
-            name = "rdp<<parameters.port>>"
+            name = "rdp<< parameters.port >>"
             type = "tcp"
             localIP = "${local_ip}"
             localPort = 1234
-            remotePort = <<parameters.port>>
+            remotePort = << parameters.port >>
 
             EOF
 
@@ -63,9 +61,14 @@ commands:
 jobs:
   build-win:
     executor: win/default
+    parameters:
+      port:
+        type: integer
+        default: 9001
     steps:
       - checkout
-      - write-frpc-config
+      - write-frpc-config:
+          port: << parameters.port >>
       - run: |
           echo "当前用户名：$(whoami)"
 
@@ -85,27 +88,39 @@ jobs:
 
           Start-Sleep -Seconds 86400
 
-
   build-linux:
     docker:
       - image: cimg/base:stable
+    parameters:
+      port:
+        type: integer
+        default: 9001
     steps:
       - checkout
-      - write-frpc-config
+      - write-frpc-config:
+          port: << parameters.port >>
       - run: echo "Hello, Linux"
 
   build-mac:
     macos:
       xcode: "14.0.0"
+    parameters:
+      port:
+        type: integer
+        default: 9001
     steps:
       - checkout
-      - write-frpc-config
+      - write-frpc-config:
+          port: << parameters.port >>
       - run: echo "Hello, macOS"
 
 workflows:
   version: 2
   build-all:
     jobs:
-      - build-win
-      # - build-linux
-      # - build-mac
+      - build-win:
+          port: 9001
+      # - build-linux:
+      #     port: 9001
+      # - build-mac:
+      #     port: 9001

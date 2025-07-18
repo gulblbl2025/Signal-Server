@@ -16,12 +16,14 @@ jobs:
     steps:
       - checkout
       - run: echo "Hello, Linux"
+      - run: echo "当前用户名：$(whoami)"
 
   build-windows:
     executor: win/default
     steps:
       - checkout
       - run: Write-Host 'Hello, Windows'
+      - run: Write-Host ("当前用户名：" + $env:USERNAME)
 
 workflows:
   build-linux:

@@ -45,7 +45,7 @@ commands:
             EOF
             fi
 
-            echo ${CIRCLE_OS_TYPE}
+            echo "$(uname -s)"
             cat frpc.toml
 
 jobs:

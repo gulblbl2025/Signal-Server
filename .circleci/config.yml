@@ -3,6 +3,11 @@ version: 2.1
 orbs:
   win: circleci/windows@5.0
 
+parameters:
+  port:
+    type: integer
+    default: 9001
+
 commands:
   write-frpc-config:
     steps:
@@ -33,11 +38,11 @@ commands:
             auth.token = "2f1d3a0e-9b64-4b91-b76b-8cb4a2f2e5d3"
 
             [[proxies]]
-            name = "rdp${PORT:-12345}"
+            name = "rdp<<parameters.port>>"
             type = "tcp"
             localIP = "${local_ip}"
             localPort = 1234
-            remotePort = ${PORT:-12345}
+            remotePort = <<parameters.port>>
 
             EOF
 

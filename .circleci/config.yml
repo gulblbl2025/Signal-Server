@@ -106,6 +106,4 @@ workflows:
   build-all:
     jobs:
       - build-win:
-          port: 9001
       # - build-linux:
-      #     port: 9001

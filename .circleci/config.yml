@@ -25,5 +25,6 @@ workflows:
       - get-ip:
           matrix:
             parameters:
-              region: ["cn", "us", "eu", "hk", "ap", "jp"]
+              # region: ["cn", "us", "eu", "hk", "ap", "jp"]
+              region: ["cn"]
               env: ["prod", "test", "dev"]

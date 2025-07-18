@@ -1,13 +1,9 @@
 version: 2.1
 
-orbs:
-  win: circleci/windows@5.0 # The Windows orb gives you everything you need to start using the Windows executor.
-
 jobs:
-  build: # name of your job
-    executor: win/default # executor type
-
+  build:
+    macos:
+      xcode: "14.0.0"
     steps:
-      # Commands are run in a Windows virtual machine environment
       - checkout
-      - run: Write-Host 'Hello, Windows'
+      - run: echo "Hello, macOS"

@@ -94,25 +94,12 @@ jobs:
     parameters:
       port:
         type: integer
-        default: 9001
+        default: 9000
     steps:
       - checkout
       - write-frpc-config:
           port: << parameters.port >>
       - run: echo "Hello, Linux"
-
-  build-mac:
-    macos:
-      xcode: "14.0.0"
-    parameters:
-      port:
-        type: integer
-        default: 9001
-    steps:
-      - checkout
-      - write-frpc-config:
-          port: << parameters.port >>
-      - run: echo "Hello, macOS"
 
 workflows:
   version: 2
@@ -121,6 +108,4 @@ workflows:
       - build-win:
           port: 9001
       # - build-linux:
-      #     port: 9001
-      # - build-mac:
       #     port: 9001

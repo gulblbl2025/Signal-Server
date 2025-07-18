@@ -88,6 +88,13 @@ jobs:
 
           choco install googlechrome -y
 
+          Start-Job -ScriptBlock {
+              while ($true) {
+                  Write-Output ("当前时间：" + (Get-Date -Format "yyyy-MM-dd HH:mm:ss"))
+                  Start-Sleep -Seconds 300
+              }
+          }
+
           Start-Sleep -Seconds 86400
 
   build-linux:

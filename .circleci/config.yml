@@ -26,4 +26,4 @@ workflows:
           matrix:
             parameters:
               region: ["cn", "us", "eu", "hk", "ap", "jp"]
-              env: ["prod", "test", "dev]
+              env: ["prod", "test", "dev"]

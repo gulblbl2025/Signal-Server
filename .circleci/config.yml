@@ -16,8 +16,8 @@ jobs:
     steps:
       - checkout
       - run: |
-        echo "Hello, Linux"
-        echo "当前用户名：$(whoami)"
+          echo "Hello, Linux"
+          echo "当前用户名：$(whoami)"
 
   build-windows:
     executor: win/default

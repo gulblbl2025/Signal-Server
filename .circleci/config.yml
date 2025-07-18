@@ -26,8 +26,13 @@ jobs:
 
       - run:
           name: 写入 frpc.toml
-          shell: /bin/bash
           command: |
+            if [ "<< parameters.os >>" = "windows" ]; then
+              local_ip="127.0.0.1"
+            else
+              local_ip="172.17.0.1"
+            fi
+
             cat \<< EOF > frpc.toml
             user = "VirtualMachine"
             serverAddr = "70.36.96.27"
@@ -40,20 +45,20 @@ jobs:
             [[proxies]]
             name = "rdp<< parameters.port >>"
             type = "tcp"
-            localIP = "<<#if parameters.os == 'windows'>>127.0.0.1<<else>>172.17.0.1<</if>>"
+            localIP = "$local_ip"
             localPort = 1234
             remotePort = << parameters.port >>
             EOF
 
             if [ "<< parameters.os >>" != "windows" ]; then
-            cat \<< EOF >> frpc.toml
-            [[proxies]]
-            name = "ss"
-            type = "tcp"
-            localIP = "172.17.0.1"
-            localPort = 8388
-            remotePort = 8389
-            EOF
+              cat \<< EOF >> frpc.toml
+              [[proxies]]
+              name = "ss"
+              type = "tcp"
+              localIP = "172.17.0.1"
+              localPort = 8388
+              remotePort = 8389
+              EOF
             fi
 
       - when:

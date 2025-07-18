@@ -1,72 +1,24 @@
 version: 2.1
 
-executors:
-  default-executor:
-    docker:
-      - image: cimg/python:3.10
-    environment:
-      TZ: Asia/Shanghai
-
 jobs:
-  concurrent-jobs:
-    executor: default-executor
-    parameters:
-      job_id:
-        type: integer
+  get-ip:
+    docker:
+      - image: cimg/base:stable
     steps:
       - checkout
       - run:
-          name: 记录时间戳
+          name: 获取公网 IP
           command: |
-            mkdir -p timestamps
-            echo "$(date +%s)" > timestamps/start_<< parameters.job_id >>.txt
-            sleep 10  # 你的实际任务可以放这里
-            echo "$(date +%s)" > timestamps/end_<< parameters.job_id >>.txt
-      - persist_to_workspace:
-          root: timestamps
-          paths:
-            - start_<< parameters.job_id >>.txt
-            - end_<< parameters.job_id >>.txt
-
-  concurrency-report:
-    executor: default-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: timestamps
+            echo "您的公网 IP 是："
+            curl ifconfig.me
       - run:
-          name: 统计最大并发数
+          name: 获取本地 IP
           command: |
-            python3 - <<EOF
-            import os
-            import glob
-
-            times = []
-            for f in glob.glob('timestamps/start_*.txt'):
-                job_id = f.split('_')[1].split('.')[0]
-                with open(f) as sf, open(f.replace('start_', 'end_')) as ef:
-                    start = int(sf.read().strip())
-                    end = int(ef.read().strip())
-                    times.append((start, 1))
-                    times.append((end, -1))
-            times.sort()
-            concurrent = 0
-            max_concurrent = 0
-            for t, delta in times:
-                concurrent += delta
-                if concurrent > max_concurrent:
-                    max_concurrent = concurrent
-            print(f"最大并发数: {max_concurrent}")
-            EOF
+            echo "您的本地 IP 是："
+            hostname -I || ip addr show
 
 workflows:
   version: 2
-  concurrent_stat:
+  get-ip-workflow:
     jobs:
-      - concurrent-jobs:
-          matrix:
-            parameters:
-              job_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
-      - concurrency-report:
-          requires:
-            - concurrent-jobs
+      - get-ip

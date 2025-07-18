@@ -10,6 +10,7 @@ jobs:
       env:
         type: string
     steps:
+      - setup_remote_docker  # 关键步骤，允许使用 Docker 命令
       - run:
           name: 打印参数
           command: |

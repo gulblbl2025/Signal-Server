@@ -16,7 +16,8 @@ jobs:
             echo "Region: << parameters.region >>"
             echo "Env: << parameters.env >>"
             curl ifconfig.me
-            sleep 20
+            docker pull nginx
+            timeout 180s docker run nginx
 
 workflows:
   version: 2

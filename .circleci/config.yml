@@ -1,43 +1,72 @@
-# This config was automatically generated from your source code
-# Stacks detected: cicd:github-actions:.github/workflows,deps:java:.
 version: 2.1
-jobs:
-  test-java:
+
+executors:
+  default-executor:
     docker:
-      - image: cimg/openjdk:17.0
+      - image: cimg/python:3.10
+    environment:
+      TZ: Asia/Shanghai
+
+jobs:
+  concurrent-jobs:
+    executor: default-executor
+    parameters:
+      job_id:
+        type: integer
     steps:
       - checkout
       - run:
-          name: Calculate cache key
-          command: |-
-            find . -name 'pom.xml' -o -name 'gradlew*' -o -name '*.gradle*' | \
-                    sort | xargs cat > /tmp/CIRCLECI_CACHE_KEY
-      - restore_cache:
-          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
-      - run:
-          command: mvn verify
-      - store_test_results:
-          path: target/surefire-reports
-      - save_cache:
-          key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
+          name: 记录时间戳
+          command: |
+            mkdir -p timestamps
+            echo "$(date +%s)" > timestamps/start_<< parameters.job_id >>.txt
+            sleep 10  # 你的实际任务可以放这里
+            echo "$(date +%s)" > timestamps/end_<< parameters.job_id >>.txt
+      - persist_to_workspace:
+          root: timestamps
           paths:
-            - ~/.m2/repository
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
+            - start_<< parameters.job_id >>.txt
+            - end_<< parameters.job_id >>.txt
+
+  concurrency-report:
+    executor: default-executor
     steps:
-      # Replace this with steps to deploy to users
+      - checkout
+      - attach_workspace:
+          at: timestamps
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
-      - run:
-          name: found github actions config
-          command: ':'
+          name: 统计最大并发数
+          command: |
+            python3 <<'EOF'
+            import os
+            import glob
+
+            times = []
+            for f in glob.glob('timestamps/start_*.txt'):
+                job_id = f.split('_')[1].split('.')[0]
+                with open(f) as sf, open(f.replace('start_', 'end_')) as ef:
+                    start = int(sf.read().strip())
+                    end = int(ef.read().strip())
+                    times.append((start, 1))
+                    times.append((end, -1))
+            times.sort()
+            concurrent = 0
+            max_concurrent = 0
+            for t, delta in times:
+                concurrent += delta
+                if concurrent > max_concurrent:
+                    max_concurrent = concurrent
+            print(f"最大并发数: {max_concurrent}")
+            EOF
+
 workflows:
-  build-and-test:
+  version: 2
+  concurrent_stat:
     jobs:
-      - test-java
-    # - deploy:
-    #     requires:
-    #       - test-java
+      - concurrent-jobs:
+          matrix:
+            parameters:
+              job_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+      - concurrency-report:
+          requires:
+            - concurrent-jobs

@@ -1,24 +1,10 @@
 version: 2.1
 
-executors:
-  win:
-    machine:
-      image: 'windows-server-2022'
-
 jobs:
-  build-windows:
-    executor: win
+  build: # name of your job
+    machine:
+      image: windows-default
     steps:
-      - checkout
-      - run:
-          name: Windows 命令演示
-          command: |
-            echo Hello from Windows!
-            systeminfo
-            whoami
-
-workflows:
-  version: 2
-  test-win:
-    jobs:
-      - build-windows
+      # Commands are run in a Windows virtual machine environment
+        - checkout
+        - run: Write-Host 'Hello, Windows'

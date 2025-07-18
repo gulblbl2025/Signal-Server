@@ -1,0 +1,41 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@5.0
+
+parameters:
+  executor-type:
+    type: enum
+    enum: [linux, windows]
+    default: linux
+
+jobs:
+  build-linux:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run: echo "Hello, Linux"
+      - run: echo "当前用户名：$(whoami)"
+
+  build-windows:
+    executor: win/default
+    steps:
+      - checkout
+      - run: Write-Host 'Hello, Windows'
+      - run: Write-Host ("当前用户名：" + $env:USERNAME)
+
+workflows:
+  build-linux:
+    when:
+      condition:
+        equal: [ "<< pipeline.parameters.executor-type >>", "linux" ]
+    jobs:
+      - build-linux
+
+  build-windows:
+    when:
+      condition:
+        equal: [ "<< pipeline.parameters.executor-type >>", "windows" ]
+    jobs:
+      - build-windows

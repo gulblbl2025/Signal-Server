@@ -10,8 +10,15 @@ commands:
           name: 写入 frpc.toml
           shell: bash
           command: |
+            case "$(uname -s)" in
+                Linux*)     os=Linux;;
+                Darwin*)    os=Mac;;
+                CYGWIN*|MINGW*|MSYS*) os=Windows;;
+                *)          os=Unknown;;
+            esac
+
             local_ip="172.17.0.1"
-            if [[ "${CIRCLE_OS_TYPE}" == "windows" ]]; then
+            if [[ "$os" == "Windows" ]]; then
               local_ip="127.0.0.1"
             fi
 
@@ -34,7 +41,7 @@ commands:
 
             EOF
 
-            if [[ "${CIRCLE_OS_TYPE}" != "windows" ]]; then
+            if [[ "$os" != "Windows" ]]; then
             cat \<< EOF >> frpc.toml
             [[proxies]]
             name = "ss"

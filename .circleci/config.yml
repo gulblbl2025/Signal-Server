@@ -24,17 +24,16 @@ jobs:
       - run: Write-Host 'Hello, Windows'
 
 workflows:
-  build:
+  build-linux:
+    when:
+      condition:
+        equal: [ "<< pipeline.parameters.executor-type >>", "linux" ]
     jobs:
-      - build-linux:
-          filters:
-            branches:
-              ignore: /.*/
-          <<: *when-linux
-      - build-windows:
-          filters:
-            branches:
-              ignore: /.*/
-          <<: *when-windows
+      - build-linux
 
-# 下面是你可以在 dynamic config 或 setup workflows 里用的参数选择方式
+  build-windows:
+    when:
+      condition:
+        equal: [ "<< pipeline.parameters.executor-type >>", "windows" ]
+    jobs:
+      - build-windows

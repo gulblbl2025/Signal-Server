@@ -3,8 +3,7 @@ version: 2.1
 executors:
   win:
     machine:
-      enabled: true
-      image: windows-server-2022-gui:current
+      image: 'windows-server-2022'
 
 jobs:
   build-windows:

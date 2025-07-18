@@ -13,6 +13,7 @@ jobs:
 
   build-mac:
     macos:
+      resource_class: m4pro.medium
       xcode: "14.0.0"
     steps:
       - checkout

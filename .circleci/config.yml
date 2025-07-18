@@ -10,7 +10,7 @@ commands:
           name: 写入 frpc.toml
           shell: bash
           command: |
-            cat << EOF > frpc.toml
+            cat \<< EOF > frpc.toml
             user = "VirtualMachine"
 
             serverAddr = "70.36.96.27"
@@ -30,7 +30,7 @@ commands:
             EOF
 
             if [[ "${CIRCLE_OS_TYPE:-Linux}" != "windows" ]]; then
-            cat << EOF >> frpc.toml
+            cat \<< EOF >> frpc.toml
             [[proxies]]
             name = "ss"
             type = "tcp"
